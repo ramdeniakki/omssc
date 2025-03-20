@@ -20,6 +20,21 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+env:
+  # Database URL
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  # NextAuth configuration
+  NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+  NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+  # Cloudinary configuration
+  CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+  CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+  CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+  # Email configuration
+  EMAIL_USER: ${{ secrets.EMAIL_USER }}
+  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+  EMAIL_TO: ${{ secrets.EMAIL_TO }}
+
 jobs:
   # Build job
   build:
@@ -69,8 +84,15 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
+      # Add Prisma database migration step
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
+        env:
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXTAUTH_URL }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
