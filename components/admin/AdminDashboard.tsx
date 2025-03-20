@@ -31,7 +31,7 @@ export default function AdminDashboard() {
 
 
       router.push("/auth/signin")
-      router.refresh() 
+      router.refresh()
     } catch (error) {
       console.error("Error signing out:", error)
       toast({
@@ -109,6 +109,7 @@ export default function AdminDashboard() {
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="customers">Customers</TabsTrigger>
           <TabsTrigger value="users">Admins</TabsTrigger>
+          <TabsTrigger value="employees">Employees</TabsTrigger>
         </TabsList>
         <TabsContent value="products">
           <Card>
@@ -166,6 +167,25 @@ export default function AdminDashboard() {
                 </Button>
                 <Button asChild variant="outline">
                   <Link href="/admin/users/new">Add New Admin</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="employees">
+          <Card>
+            <CardHeader>
+              <CardTitle>Employee Management</CardTitle>
+              <CardDescription>Manage employees, their details, and attendance records.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row gap-4">
+                <Button asChild>
+                  <Link href="/admin/employees">View All Employees</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/admin/employees/new">Add New Employee</Link>
                 </Button>
               </div>
             </CardContent>

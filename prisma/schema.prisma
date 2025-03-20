@@ -1,31 +1,56 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  description String
-  price       Float
-  category    String
-  model       String
-  imageUrl    String
-  featured    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+    id          String   @id @default(cuid())
+    name        String
+    description String
+    price       Float
+    category    String
+    model       String
+    imageUrl    String
+    featured    Boolean  @default(false)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String?
-  email     String   @unique
-  password  String
-  isAdmin   Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    id        String   @id @default(cuid())
+    name      String?
+    email     String   @unique
+    password  String
+    isAdmin   Boolean  @default(false)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Employee {
+    id          String       @id @default(cuid())
+    name        String
+    phone       String
+    position    String
+    joinDate    DateTime     @default(now())
+    isActive    Boolean      @default(true)
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+    attendances Attendance[]
+}
+
+model Attendance {
+    id         String   @id @default(cuid())
+    date       DateTime @default(now())
+    status     String   @default("present") // present, absent, leave
+    note       String?
+    employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+    employeeId String
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+
+    @@unique([employeeId, date])
 }
