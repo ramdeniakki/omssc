@@ -1,13 +1,9 @@
 import AdminEmployeeDetails from "@/components/admin/AdminEmployeeDetails";
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
-
 export default async function EmployeeDetailsPage({
-  params
-}: PageProps) {
+  params,
+}: {
+  params: { id: string };
+}) {
   return <AdminEmployeeDetails id={params.id} />
 }
