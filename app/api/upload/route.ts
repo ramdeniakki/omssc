@@ -21,28 +21,24 @@ export async function POST(request: Request) {
       )
     }
 
+    // Convert file to base64
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
+    const base64String = `data:${file.type};base64,${buffer.toString('base64')}`
 
-    // Upload to Cloudinary
-    const result = await new Promise((resolve, reject) => {
-      cloudinary.uploader
-        .upload_stream(
-          {
-            resource_type: "auto",
-            folder: "bicycle-store",
-          },
-          (error, result) => {
-            if (error) reject(error)
-            else resolve(result)
-          }
-        )
-        .end(buffer)
+    // Upload to Cloudinary using upload API
+    const uploadResponse = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload(base64String, {
+        folder: "bicycle-store",
+      }, (error, result) => {
+        if (error) reject(error)
+        else resolve(result)
+      })
     })
 
     return NextResponse.json({
       success: true,
-      url: (result as any).secure_url,
+      url: (uploadResponse as any).secure_url,
     })
   } catch (error) {
     console.error("Error uploading file:", error)
