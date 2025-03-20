@@ -1,9 +1,12 @@
 import AdminEmployeeDetails from "@/components/admin/AdminEmployeeDetails";
 
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
+
 export default async function EmployeeDetailsPage({
   params,
-}: {
-  params: { id: string };
-}) {
-  return <AdminEmployeeDetails id={params.id} />
+}: PageProps) {
+  const resolvedParams = await params;
+  return <AdminEmployeeDetails id={resolvedParams.id} />
 }
