@@ -1,9 +1,12 @@
-import { Suspense } from "react"
-import ProductGrid from "@/components/ProductGrid"
+import Loading from "@/components/Loading"
 import ProductFilters from "@/components/ProductFilters"
+import ProductGrid from "@/components/ProductGrid"
 import ProductsHeader from "@/components/ProductsHeader"
 import { getAllProducts } from "@/lib/products"
-import Loading from "@/components/Loading"
+import { Suspense } from "react"
+
+export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 export default async function ProductsPage({
   searchParams,
@@ -34,4 +37,3 @@ export default async function ProductsPage({
     </div>
   )
 }
-

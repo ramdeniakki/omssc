@@ -1,6 +1,7 @@
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
+import { revalidatePath } from "next/cache"
 import { NextResponse } from "next/server"
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
@@ -15,7 +16,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "Product not found" }, { status: 404 })
     }
 
-    return NextResponse.json(product)
+    const response = NextResponse.json(product)
+    response.headers.set("Cache-Control", "no-store, must-revalidate")
+    response.headers.set("Pragma", "no-cache")
+    response.headers.set("Expires", "0")
+    return response
   } catch (error) {
     console.error("Error fetching product:", error)
     return NextResponse.json({ error: "Error fetching product" }, { status: 500 })
@@ -31,7 +36,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
   try {
     const formData = await request.formData()
-
 
     const image = formData.get("image") as File
     let imageUrl = undefined
@@ -53,7 +57,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       imageUrl = url
     }
 
-    
     const product = await prisma.product.update({
       where: {
         id: params.id,
@@ -68,7 +71,17 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     })
 
-    return NextResponse.json(product)
+    // Revalidate all product-related pages
+    revalidatePath("/products")
+    revalidatePath("/products/[id]")
+    revalidatePath("/")
+    revalidatePath("/categories/[category]")
+
+    const response = NextResponse.json(product)
+    response.headers.set("Cache-Control", "no-store, must-revalidate")
+    response.headers.set("Pragma", "no-cache")
+    response.headers.set("Expires", "0")
+    return response
   } catch (error) {
     console.error("Error updating product:", error)
     return NextResponse.json({ error: "Error updating product" }, { status: 500 })
@@ -88,6 +101,12 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         id: params.id,
       },
     })
+
+    // Revalidate all product-related pages
+    revalidatePath("/products")
+    revalidatePath("/products/[id]")
+    revalidatePath("/")
+    revalidatePath("/categories/[category]")
 
     return new NextResponse(null, { status: 204 })
   } catch (error) {

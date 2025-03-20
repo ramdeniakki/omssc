@@ -7,6 +7,7 @@ type ProductFilters = {
   minPrice?: string
   maxPrice?: string
   categories?: string
+  category?: string
 }
 
 export async function getAllProducts(filters: ProductFilters): Promise<Product[]> {
