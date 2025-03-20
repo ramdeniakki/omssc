@@ -4,14 +4,19 @@ import { getProductById } from "@/lib/products"
 import { getServerSession } from "next-auth"
 import { notFound, redirect } from "next/navigation"
 
-export default async function EditProductPage({ params }: { params: { id: string } }) {
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function EditProductPage({ params }: PageProps) {
   const session = await getServerSession(authOptions)
 
   if (!session || !session.user.isAdmin) {
     redirect("/auth/signin")
   }
 
-  const product = await getProductById(params.id)
+  const resolvedParams = await params;
+  const product = await getProductById(resolvedParams.id)
 
   if (!product) {
     notFound()
