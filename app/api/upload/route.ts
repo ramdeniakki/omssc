@@ -1,5 +1,12 @@
-import { v2 as cloudinary } from "cloudinary"
-import { NextResponse } from "next/server"
+import { v2 as cloudinary } from "cloudinary";
+import { NextResponse } from "next/server";
+
+// Log the configuration (without secrets) to help debug
+console.log("Cloudinary Configuration:", {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key_length: process.env.CLOUDINARY_API_KEY?.length,
+  api_secret_exists: !!process.env.CLOUDINARY_API_SECRET
+});
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -9,6 +16,23 @@ cloudinary.config({
 
 export async function POST(request: Request) {
   try {
+    // Verify Cloudinary configuration is working
+    try {
+      await new Promise((resolve, reject) => {
+        cloudinary.api.ping((error, result) => {
+          if (error) reject(error)
+          else resolve(result)
+        })
+      })
+      console.log("Cloudinary connection verified successfully")
+    } catch (error) {
+      console.error("Cloudinary configuration error:", error)
+      return NextResponse.json(
+        { error: "Invalid Cloudinary configuration" },
+        { status: 500 }
+      )
+    }
+
     const formData = await request.formData()
     const file = formData.get("file") as File
 
@@ -29,8 +53,10 @@ export async function POST(request: Request) {
       cloudinary.uploader.upload(base64String, {
         folder: "bicycle-store",
       }, (error, result) => {
-        if (error) reject(error)
-        else resolve(result)
+        if (error) {
+          console.error("Cloudinary upload error:", error)
+          reject(error)
+        } else resolve(result)
       })
     })
 
@@ -41,7 +67,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error uploading file:", error)
     return NextResponse.json(
-      { error: "Error uploading file" },
+      { error: error instanceof Error ? error.message : "Error uploading file" },
       { status: 500 }
     )
   }

@@ -65,55 +65,88 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
-  const session = await getServerSession(authOptions)
-
-  if (!session || !session.user.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
   }
+  // Fallback to constructing the URL from request headers in development
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3000';
+  }
+  throw new Error('NEXT_PUBLIC_APP_URL environment variable is not set');
+};
 
+export async function POST(request: Request) {
   try {
-    const formData = await request.formData()
+    const session = await getServerSession(authOptions);
 
-    // Handle image upload first
-    const image = formData.get("image") as File
-    let imageUrl = null
-
-    if (image) {
-      const imageFormData = new FormData()
-      imageFormData.append("file", image)
-
-      const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/upload`, {
-        method: "POST",
-        body: imageFormData,
-      })
-
-      if (!uploadResponse.ok) {
-        throw new Error("Failed to upload image")
-      }
-
-      const { url } = await uploadResponse.json()
-      imageUrl = url
+    if (!session || !session.user.isAdmin) {
+      return NextResponse.json(
+        { error: "Unauthorized access" },
+        { status: 401 }
+      );
     }
 
-    // Create product with image URL
+    const formData = await request.formData();
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const price = parseFloat(formData.get("price") as string);
+    const category = formData.get("category") as string;
+    const model = formData.get("model") as string;
+    const image = formData.get("image") as File;
+
+    if (!name || !description || !price || !category || !model) {
+      return NextResponse.json(
+        { error: "All fields are required except image" },
+        { status: 400 }
+      );
+    }
+
+    let imageUrl = null;
+
+    if (image) {
+      try {
+        const imageFormData = new FormData();
+        imageFormData.append("file", image);
+
+        const baseUrl = getBaseUrl();
+        const uploadResponse = await fetch(`${baseUrl}/api/upload`, {
+          method: "POST",
+          body: imageFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error(`Failed to upload image: ${uploadResponse.statusText}`);
+        }
+
+        const uploadData = await uploadResponse.json();
+        imageUrl = uploadData.url;
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        return NextResponse.json(
+          { error: "Failed to upload image" },
+          { status: 500 }
+        );
+      }
+    }
+
     const product = await prisma.product.create({
       data: {
-        name: formData.get("name") as string,
-        description: formData.get("description") as string,
-        price: parseFloat(formData.get("price") as string),
-        category: formData.get("category") as "sports" | "electric" | "kids",
-        model: formData.get("model") as string,
+        name,
+        description,
+        price,
+        category,
+        model,
         imageUrl,
       },
-    })
+    });
 
-    return NextResponse.json(product)
+    return NextResponse.json(product, { status: 201 });
   } catch (error) {
-    console.error("Error creating product:", error)
+    console.error("Error creating product:", error);
     return NextResponse.json(
-      { error: "Error creating product" },
+      { error: "Failed to create product" },
       { status: 500 }
-    )
+    );
   }
 }

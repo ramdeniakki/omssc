@@ -16,6 +16,12 @@ const nextConfig = {
     }
     return config
   },
+  images: {
+    domains: [
+      'hebbkx1anhila5yf.public.blob.vercel-storage.com',
+      'res.cloudinary.com'
+    ],
+  },
 }
 
 module.exports = nextConfig
