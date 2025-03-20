@@ -20,12 +20,13 @@ export default async function ProductPage({ params }: { params: { id: string } }
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-        <div className="relative aspect-square overflow-hidden rounded-lg">
+        <div className="relative aspect-square overflow-hidden rounded-lg bg-white p-4">
           <Image
             src={product.imageUrl || "/placeholder.svg"}
             alt={product.name}
             fill
-            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-contain"
             priority
           />
         </div>

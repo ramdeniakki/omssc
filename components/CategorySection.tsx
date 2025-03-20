@@ -1,6 +1,6 @@
-import Link from "next/link"
-import Image from "next/image"
 import { ArrowRight } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 
 const categories = [
   {
@@ -47,7 +47,8 @@ export default function CategorySection() {
                   src={category.image || "/placeholder.svg"}
                   alt={category.name}
                   fill
-                  className="category-image object-cover transition-transform"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="category-image object-contain p-2 transition-transform"
                 />
               </div>
             </div>
@@ -65,4 +66,3 @@ export default function CategorySection() {
     </section>
   )
 }
-

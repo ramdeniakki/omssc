@@ -249,12 +249,11 @@ export default function AdminProductForm({ product }: { product?: Product }) {
                 src={previewUrl}
                 alt="Product preview"
                 fill
-                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-contain p-2"
               />
             ) : (
-              <div className="flex items-center justify-center h-full bg-muted">
-                <p className="text-muted-foreground">No image selected</p>
-              </div>
+              <p className="text-muted-foreground">No image selected</p>
             )}
           </div>
         </div>

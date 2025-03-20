@@ -16,7 +16,8 @@ export default function ProductCard({ product }: { product: Product }) {
             src={product.imageUrl || "/placeholder.svg"}
             alt={product.name}
             fill
-            className="product-image object-cover transition-transform"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="product-image object-contain p-2 transition-transform"
           />
         </div>
       </div>

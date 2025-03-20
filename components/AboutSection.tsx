@@ -8,7 +8,7 @@ export default function AboutSection() {
           <h2 className="text-3xl font-bold mb-6">About OMSSC</h2>
           <p className="text-muted-foreground mb-6">
             At , we're passionate about bicycles and committed to providing our customers with the highest
-            quality bikes and exceptional service. With over 15 years of experience in the industry, we've built a
+            quality bikes and exceptional service. With over 30 years of experience in the industry, we've built a
             reputation for excellence and reliability.
           </p>
           <p className="text-muted-foreground mb-6">
