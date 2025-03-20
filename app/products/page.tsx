@@ -2,22 +2,28 @@ import Loading from "@/components/Loading"
 import ProductFilters from "@/components/ProductFilters"
 import ProductGrid from "@/components/ProductGrid"
 import ProductsHeader from "@/components/ProductsHeader"
-import { getAllProducts } from "@/lib/products"
+import { prisma } from "@/lib/prisma"
 import { Suspense } from "react"
+
+type PageProps = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
 
 export default async function ProductsPage({
   searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined }
-}) {
-  const category = typeof searchParams.category === "string" ? searchParams.category : undefined
-  const search = typeof searchParams.search === "string" ? searchParams.search : undefined
-  const sort = typeof searchParams.sort === "string" ? searchParams.sort : undefined
+}: PageProps) {
+  const resolvedSearchParams = await searchParams;
+  const search = typeof resolvedSearchParams.search === "string" ? resolvedSearchParams.search : undefined;
+  const sort = typeof resolvedSearchParams.sort === "string" ? resolvedSearchParams.sort : undefined;
 
-  const products = await getAllProducts({ category, search, sort })
+  const products = await prisma.product.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
   return (
     <div className="container mx-auto px-4 py-8">

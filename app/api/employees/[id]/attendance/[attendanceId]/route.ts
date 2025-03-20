@@ -3,14 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
+type RouteParams = {
+  params: Promise<{ id: string; attendanceId: string }>;
+};
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; attendanceId: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getServerSession(authOptions)
-
 
     if (!session || !session.user.isAdmin) {
       return NextResponse.json(
@@ -19,9 +21,9 @@ export async function DELETE(
       )
     }
 
-    const employeeId = params.id
-    const attendanceId = params.attendanceId
-
+    const resolvedParams = await params;
+    const employeeId = resolvedParams.id
+    const attendanceId = resolvedParams.attendanceId
 
     const employee = await prisma.employee.findUnique({
       where: { id: employeeId },
@@ -33,7 +35,6 @@ export async function DELETE(
         { status: 404 }
       )
     }
-
 
     const attendance = await prisma.attendance.findFirst({
       where: {
@@ -49,7 +50,6 @@ export async function DELETE(
       )
     }
 
-   
     await prisma.attendance.delete({
       where: { id: attendanceId },
     })

@@ -1,16 +1,19 @@
-import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import { getServerSession } from "next-auth"
-import { NextRequest, NextResponse } from "next/server"
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
 
+type RouteParams = {
+  params: Promise<{ id: string }>;
+};
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getServerSession(authOptions)
-
+    const resolvedParams = await params;
 
     if (!session || !session.user.isAdmin) {
       return NextResponse.json(
@@ -19,7 +22,7 @@ export async function GET(
       )
     }
 
-    const id = params.id;
+    const id = resolvedParams.id;
 
     const employee = await prisma.employee.findUnique({
       where: { id },
@@ -49,14 +52,13 @@ export async function GET(
   }
 }
 
-
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getServerSession(authOptions)
-
+    const resolvedParams = await params;
 
     if (!session || !session.user.isAdmin) {
       return NextResponse.json(
@@ -65,7 +67,7 @@ export async function PUT(
       )
     }
 
-    const id = params.id
+    const id = resolvedParams.id
     const body = await request.json()
     const { name, phone, position, isActive } = body
 
@@ -77,7 +79,6 @@ export async function PUT(
       )
     }
 
-
     const existingEmployee = await prisma.employee.findUnique({
       where: { id },
     })
@@ -88,7 +89,6 @@ export async function PUT(
         { status: 404 }
       )
     }
-
 
     const updatedEmployee = await prisma.employee.update({
       where: { id },
@@ -112,11 +112,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getServerSession(authOptions)
-
+    const resolvedParams = await params;
 
     if (!session || !session.user.isAdmin) {
       return NextResponse.json(
@@ -125,8 +125,7 @@ export async function DELETE(
       )
     }
 
-    const id = params.id
-
+    const id = resolvedParams.id
 
     const existingEmployee = await prisma.employee.findUnique({
       where: { id },
@@ -138,7 +137,6 @@ export async function DELETE(
         { status: 404 }
       )
     }
-
 
     await prisma.employee.delete({
       where: { id },

@@ -2,18 +2,38 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+type RouteParams = {
+  params: Promise<{ id: string }>;
+};
+
+export async function GET(
+  request: NextRequest,
+  { params }: RouteParams
+) {
   try {
+    const session = await getServerSession(authOptions)
+
+    if (!session || !session.user.isAdmin) {
+      return NextResponse.json(
+        { error: "Unauthorized access" },
+        { status: 401 }
+      )
+    }
+
+    const resolvedParams = await params;
+    const id = resolvedParams.id
+
     const product = await prisma.product.findUnique({
-      where: {
-        id: params.id,
-      },
+      where: { id },
     })
 
     if (!product) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 })
+      return NextResponse.json(
+        { error: "Product not found" },
+        { status: 404 }
+      )
     }
 
     const response = NextResponse.json(product)
@@ -23,51 +43,60 @@ export async function GET(request: Request, { params }: { params: { id: string }
     return response
   } catch (error) {
     console.error("Error fetching product:", error)
-    return NextResponse.json({ error: "Error fetching product" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to fetch product" },
+      { status: 500 }
+    )
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions)
-
-  if (!session || !session.user.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
+export async function PUT(
+  request: NextRequest,
+  { params }: RouteParams
+) {
   try {
-    const formData = await request.formData()
+    const session = await getServerSession(authOptions)
 
-    const image = formData.get("image") as File
-    let imageUrl = undefined
-
-    if (image) {
-      const imageFormData = new FormData()
-      imageFormData.append("file", image)
-
-      const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/upload`, {
-        method: "POST",
-        body: imageFormData,
-      })
-
-      if (!uploadResponse.ok) {
-        throw new Error("Failed to upload image")
-      }
-
-      const { url } = await uploadResponse.json()
-      imageUrl = url
+    if (!session || !session.user.isAdmin) {
+      return NextResponse.json(
+        { error: "Unauthorized access" },
+        { status: 401 }
+      )
     }
 
-    const product = await prisma.product.update({
-      where: {
-        id: params.id,
-      },
+    const resolvedParams = await params;
+    const id = resolvedParams.id
+    const body = await request.json()
+    const { name, description, price, category, model, imageUrl, featured } = body
+
+    if (!name || !description || !price || !category || !model || !imageUrl) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      )
+    }
+
+    const product = await prisma.product.findUnique({
+      where: { id },
+    })
+
+    if (!product) {
+      return NextResponse.json(
+        { error: "Product not found" },
+        { status: 404 }
+      )
+    }
+
+    const updatedProduct = await prisma.product.update({
+      where: { id },
       data: {
-        name: formData.get("name") as string,
-        description: formData.get("description") as string,
-        price: parseFloat(formData.get("price") as string),
-        category: formData.get("category") as "sports" | "electric" | "kids",
-        model: formData.get("model") as string,
-        ...(imageUrl && { imageUrl }),
+        name,
+        description,
+        price,
+        category,
+        model,
+        imageUrl,
+        featured: featured ?? false,
       },
     })
 
@@ -77,29 +106,50 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     revalidatePath("/")
     revalidatePath("/categories/[category]")
 
-    const response = NextResponse.json(product)
+    const response = NextResponse.json(updatedProduct)
     response.headers.set("Cache-Control", "no-store, must-revalidate")
     response.headers.set("Pragma", "no-cache")
     response.headers.set("Expires", "0")
     return response
   } catch (error) {
     console.error("Error updating product:", error)
-    return NextResponse.json({ error: "Error updating product" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to update product" },
+      { status: 500 }
+    )
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions)
-
-  if (!session || !session.user.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
+export async function DELETE(
+  request: NextRequest,
+  { params }: RouteParams
+) {
   try {
+    const session = await getServerSession(authOptions)
+
+    if (!session || !session.user.isAdmin) {
+      return NextResponse.json(
+        { error: "Unauthorized access" },
+        { status: 401 }
+      )
+    }
+
+    const resolvedParams = await params;
+    const id = resolvedParams.id
+
+    const product = await prisma.product.findUnique({
+      where: { id },
+    })
+
+    if (!product) {
+      return NextResponse.json(
+        { error: "Product not found" },
+        { status: 404 }
+      )
+    }
+
     await prisma.product.delete({
-      where: {
-        id: params.id,
-      },
+      where: { id },
     })
 
     // Revalidate all product-related pages
@@ -108,9 +158,15 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     revalidatePath("/")
     revalidatePath("/categories/[category]")
 
-    return new NextResponse(null, { status: 204 })
+    return NextResponse.json(
+      { message: "Product deleted successfully" },
+      { status: 200 }
+    )
   } catch (error) {
     console.error("Error deleting product:", error)
-    return NextResponse.json({ error: "Error deleting product" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to delete product" },
+      { status: 500 }
+    )
   }
 }

@@ -3,13 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
+type RouteParams = {
+  params: Promise<{ id: string }>;
+};
+
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
-
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
 
     if (!session || !session.user.isAdmin) {
       return NextResponse.json(
@@ -18,8 +22,7 @@ export async function GET(
       );
     }
 
-    const userId = params.id.toString();
-
+    const userId = resolvedParams.id.toString();
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -52,11 +55,11 @@ export async function GET(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
-
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
 
     if (!session || !session.user.isAdmin) {
       return NextResponse.json(
@@ -65,7 +68,7 @@ export async function DELETE(
       );
     }
 
-    const userId = params.id.toString();
+    const userId = resolvedParams.id.toString();
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -85,7 +88,6 @@ export async function DELETE(
       );
     }
 
-   
     await prisma.user.delete({
       where: { id: userId },
     });
