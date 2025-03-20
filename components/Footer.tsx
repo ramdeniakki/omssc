@@ -1,4 +1,6 @@
-import { Facebook, Instagram, Twitter } from "lucide-react"
+"use client"
+
+import { Instagram, Linkedin, Mail, Phone, Twitter } from "lucide-react"
 import Link from "next/link"
 
 export default function Footer() {
@@ -12,15 +14,9 @@ export default function Footer() {
               Your one-stop shop for quality bicycles - sports, electric, and kids models.
             </p>
             <div className="flex space-x-4">
-              <Link href="#" className="text-muted-foreground hover:text-primary">
-                <Facebook className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary">
-                <Instagram className="h-5 w-5" />
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary">
+              <a href="https://x.com/ramdeniaadi" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
                 <Twitter className="h-5 w-5" />
-              </Link>
+              </a>
             </div>
           </div>
 
@@ -81,14 +77,41 @@ export default function Footer() {
             <address className="not-italic text-muted-foreground">
               <p>Near Bus stand Main Road</p>
               <p>Gadchandur, Chandrapur</p>
-              <p className="mt-2">Phone: (+91) 9860224423</p>
-              <p>Email: workingwithakki@gmail.com</p>
+              <div className="flex items-center gap-2 mt-2">
+                <Phone className="h-4 w-4" />
+                <p>(+91) 9860224423</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                <p>workingwithakki@gmail.com</p>
+              </div>
             </address>
           </div>
         </div>
 
-        <div className="border-t mt-12 pt-8 text-center text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} OMSSC. All rights reserved.</p>
+        <div className="border-t mt-12 pt-8 text-center">
+          <p className="text-muted-foreground">
+            &copy; {new Date().getFullYear()} OMSSC. All rights reserved.
+          </p>
+          <div className="mt-2">
+            <p className="text-muted-foreground text-sm mb-2">
+              Developed by <span className="font-semibold">Ramdeni Akshith</span> (Full Stack Engineer)
+            </p>
+            <div className="flex justify-center space-x-4 mt-1">
+              <a href="https://www.linkedin.com/in/ramdeni-akshith-b96b01203/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary" title="LinkedIn">
+                <Linkedin className="h-4 w-4" />
+              </a>
+              <a href="https://www.instagram.com/akki_ramdeni/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary" title="Instagram">
+                <Instagram className="h-4 w-4" />
+              </a>
+              <a href="https://x.com/ramdeniaadi" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary" title="Twitter">
+                <Twitter className="h-4 w-4" />
+              </a>
+              <a href="mailto:workingwithakki@gmail.com" className="text-muted-foreground hover:text-primary" title="Email">
+                <Mail className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
