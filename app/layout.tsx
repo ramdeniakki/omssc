@@ -1,5 +1,6 @@
 import Footer from "@/components/Footer"
 import Navbar from "@/components/Navbar"
+import ScrollToTop from "@/components/ScrollToTop"
 import SessionProviderWrapper from "@/components/SessionProviderWrapper"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
@@ -30,6 +31,7 @@ export default function RootLayout({
               <Navbar />
               <main className="flex-1">{children}</main>
               <Footer />
+              <ScrollToTop />
             </div>
             <Toaster />
           </ThemeProvider>

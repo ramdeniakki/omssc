@@ -9,14 +9,29 @@ import { Menu, Search, ShoppingCart, User, X } from "lucide-react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ModeToggle } from "./ModeToggle"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
   const { data: session } = useSession()
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 20
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [scrolled])
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
 
@@ -27,8 +42,28 @@ export default function Navbar() {
     }
   }
 
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    e.preventDefault()
+    const section = document.getElementById(sectionId)
+    if (section) {
+      const navbarHeight = 64; // height of navbar (4rem/64px)
+      const sectionTop = section.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
+      window.scrollTo({
+        top: sectionTop,
+        behavior: 'smooth'
+      });
+      setIsMenuOpen(false)
+    } else if (sectionId.startsWith('#')) {
+      // If it's an anchor but section not found on current page, navigate to the page
+      window.location.href = sectionId
+    }
+  }
+
   const navLinks = [
     { href: "/", label: "Home" },
+    { href: "/#featured", label: "Featured" },
+    { href: "/#about", label: "About" },
+    { href: "/#services", label: "Services" },
     { href: "/products", label: "All Bikes" },
     { href: "/categories/sports", label: "Sports" },
     { href: "/categories/electric", label: "Electric" },
@@ -37,7 +72,14 @@ export default function Navbar() {
   ]
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header
+      className={cn(
+        "sticky top-0 z-50 w-full border-b backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-200",
+        scrolled
+          ? "bg-background/95 shadow-md"
+          : "bg-background/80"
+      )}
+    >
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
@@ -55,6 +97,7 @@ export default function Navbar() {
                   "text-sm font-medium transition-colors hover:text-primary",
                   pathname === link.href ? "text-primary" : "text-muted-foreground",
                 )}
+                onClick={(e) => link.href.includes('#') ? scrollToSection(e, link.href.split('/').pop() || '') : null}
               >
                 {link.label}
               </Link>
