@@ -44,6 +44,18 @@ export default function Navbar() {
 
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
     e.preventDefault()
+
+    // Check if we're navigating to a different page (not just an anchor)
+    const linkPath = e.currentTarget.href.split('#')[0]
+    const currentPath = window.location.href.split('#')[0]
+
+    if (linkPath !== currentPath) {
+      // Different page - navigate directly to the URL
+      window.location.href = e.currentTarget.href
+      return
+    }
+
+    // Same page, just scroll to the section
     const section = document.getElementById(sectionId)
     if (section) {
       const navbarHeight = 64; // height of navbar (4rem/64px)
@@ -97,7 +109,7 @@ export default function Navbar() {
                   "text-sm font-medium transition-colors hover:text-primary",
                   pathname === link.href ? "text-primary" : "text-muted-foreground",
                 )}
-                onClick={(e) => link.href.includes('#') ? scrollToSection(e, link.href.split('/').pop() || '') : null}
+                onClick={(e) => link.href.includes('#') ? scrollToSection(e, link.href.split('#')[1] || '') : null}
               >
                 {link.label}
               </Link>
@@ -173,7 +185,9 @@ export default function Navbar() {
                     "text-sm font-medium transition-colors hover:text-primary",
                     pathname === link.href ? "text-primary" : "text-muted-foreground",
                   )}
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={(e) => link.href.includes('#')
+                    ? scrollToSection(e, link.href.split('#')[1] || '')
+                    : setIsMenuOpen(false)}
                 >
                   {link.label}
                 </Link>

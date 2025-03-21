@@ -4,6 +4,22 @@ import { Instagram, Linkedin, Mail, Phone, Twitter } from "lucide-react"
 import Link from "next/link"
 
 export default function Footer() {
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    e.preventDefault()
+    const section = document.getElementById(sectionId)
+    if (section) {
+      const navbarHeight = 64
+      const sectionTop = section.getBoundingClientRect().top + window.pageYOffset - navbarHeight
+      window.scrollTo({
+        top: sectionTop,
+        behavior: "smooth"
+      })
+    } else {
+      // If on a different page, navigate to the homepage with the anchor
+      window.location.href = `/#${sectionId}`
+    }
+  }
+
   return (
     <footer className="bg-background border-t">
       <div className="container mx-auto px-4 py-12">
@@ -50,12 +66,20 @@ export default function Footer() {
             <h3 className="text-lg font-bold mb-4">Company</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="#about" className="text-muted-foreground hover:text-primary">
+                <Link
+                  href="/#about"
+                  className="text-muted-foreground hover:text-primary"
+                  onClick={(e) => scrollToSection(e, "about")}
+                >
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="#services" className="text-muted-foreground hover:text-primary">
+                <Link
+                  href="/#services"
+                  className="text-muted-foreground hover:text-primary"
+                  onClick={(e) => scrollToSection(e, "services")}
+                >
                   Services
                 </Link>
               </li>
